@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-06-29T16:21:10Z",
+  "mode": "offline",
+  "overall": "PASS",
+  "note": "No exchange accounts or live services required",
+  "checks": [
+    {"status": "PASS", "id": "pairs_calc_slots", "detail": "go test ok", "extra": "./internal/calculator/..."},
+    {"status": "PASS", "id": "pairs_orchestrator", "detail": "go test ok", "extra": "./internal/orchestrator/..."},
+    {"status": "PASS", "id": "pairs_freshness", "detail": "go test ok", "extra": "./internal/market/..."},
+    {"status": "PASS", "id": "perf_grpc_load_ta", "detail": "go test ok", "extra": "./internal/transport/grpc/..."},
+    {"status": "PASS", "id": "filter_readiness", "detail": "go test ok", "extra": "./internal/strategycore/..."},
+    {"status": "PASS", "id": "perf_grpc_load_dms", "detail": "go test ok", "extra": "./internal/transport/grpcopp/..."},
+    {"status": "PASS", "id": "exec_tes", "detail": "go test ok", "extra": "./..."},
+    {"status": "PASS", "id": "life_lifecycle_unit", "detail": "go test ok", "extra": "./tests/e2e_lifecycle_integrity/lifecycle/..."}
+  ]
+}

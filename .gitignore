@@ -1,0 +1,8 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+e2e-standards/config.env
+e2e-standards/reports/
+node_modules/
+.DS_Store
