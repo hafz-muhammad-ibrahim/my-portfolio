@@ -15,18 +15,23 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import subprocess
 import sys
-from pathlib import Path
 
-from dotenv import load_dotenv
+# config.py anchors every path on __file__ and loads agents/.env explicitly, so
+# these resolve the same way no matter what directory the process starts in
+# (previously E2E_DIR was resolved against the CWD and broke under uvicorn).
+from config import (
+    ANTHROPIC_API_KEY,
+    ANTHROPIC_MODEL,
+    E2E_STANDARDS_PATH,
+    KNOWLEDGE_PATH,
+    PROMPTS_PATH,
+)
 
-load_dotenv()
-
-PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
-E2E_DIR = Path(os.getenv("E2E_STANDARDS_PATH", "../e2e-standards")).resolve()
-KNOWLEDGE_DIR = Path(__file__).parent.parent / "knowledge"
+PROMPTS_DIR = PROMPTS_PATH
+E2E_DIR = E2E_STANDARDS_PATH
+KNOWLEDGE_DIR = KNOWLEDGE_PATH
 
 
 def load_prompt(name: str) -> str:
@@ -84,7 +89,7 @@ def pm_plan_stub(report: dict) -> dict:
 
 
 def pm_plan_claude(user_request: str, e2e_report: dict | None = None) -> dict:
-    api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    api_key = ANTHROPIC_API_KEY
     if not api_key:
         return {
             "summary": "No ANTHROPIC_API_KEY — using stub plan",
@@ -108,7 +113,7 @@ def pm_plan_claude(user_request: str, e2e_report: dict | None = None) -> dict:
 
     client = anthropic.Anthropic(api_key=api_key)
     msg = client.messages.create(
-        model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+        model=ANTHROPIC_MODEL,
         max_tokens=2048,
         system=system,
         messages=[{"role": "user", "content": user_content}],
