@@ -56,7 +56,6 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 | `perf_ta_cycle` | Orchestrator cycle warning | < 100ms |
 | `perf_grpc_queue_ta` | TA candidate queue depth | < 80% of 1024 |
 | `perf_grpc_queue_dms` | DMS `DMSPostDecideQueueDepth` | < 80% of 512 |
-| `perf_load_350` | gRPC load stress test | 350 streams/sec no crash |
 
 ---
 
@@ -96,4 +95,16 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 }
 ```
 
-PM agent reads this file when `overall` is `FAIL`.
+### `overall` states
+
+| State | Meaning | `run_offline.sh` exit code |
+|-------|---------|---------------------------|
+| `PASS` | Every check ran and passed | 0 |
+| `FAIL` | At least one check ran and failed | 1 |
+| `INCOMPLETE` | No check failed, but at least one was `SKIP`ped and never ran | 2 |
+
+`INCOMPLETE` is **not** a pass. A skipped check is an absence of evidence — most
+often a repo path in `config.env` that does not resolve — so a run that skipped
+anything may not be reported as green.
+
+PM agent reads this file when `overall` is `FAIL` or `INCOMPLETE`.

@@ -56,7 +56,9 @@ def run_offline_e2e() -> dict:
 
 
 def pm_plan_stub(report: dict) -> dict:
-    failed = [c for c in report.get("checks", []) if c.get("status") == "FAIL"]
+    checks = report.get("checks", [])
+    failed = [c for c in checks if c.get("status") == "FAIL"]
+    skipped = [c for c in checks if c.get("status") == "SKIP"]
     tasks = []
     for i, check in enumerate(failed, start=1):
         cid = check.get("id", "unknown")
@@ -66,6 +68,15 @@ def pm_plan_stub(report: dict) -> dict:
             "priority": i,
             "description": f"Fix: {cid} — {check.get('detail', '')}",
             "acceptance": f"{cid} PASS on next run_offline.sh",
+        })
+    # A SKIP is an absence of evidence, not a pass — never report "all passed".
+    for j, check in enumerate(skipped, start=len(tasks) + 1):
+        cid = check.get("id", "unknown")
+        tasks.append({
+            "agent": "human",
+            "priority": j,
+            "description": f"Check never ran: {cid} — {check.get('detail', '')} ({check.get('extra', '')})",
+            "acceptance": f"{cid} reports PASS or FAIL (not SKIP) on next run_offline.sh",
         })
     if not tasks:
         tasks = [{"agent": "human", "priority": 1, "description": "All offline checks passed — review and commit", "acceptance": "You merge"}]

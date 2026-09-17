@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # run_offline.sh — Learning mode: NO live services, NO exchange accounts required.
-# Validates code quality via go test + load stress tests only.
+# Validates code quality via go test only.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPORT_DIR="${SCRIPT_DIR}/reports"
@@ -17,7 +17,16 @@ else
   source "${SCRIPT_DIR}/config.env.example"
 fi
 
-record() { CHECKS+=("$1"); [[ "$1" == FAIL* ]] && OVERALL="FAIL"; }
+# Overall state precedence: FAIL > INCOMPLETE > PASS.
+# A SKIP means a check never ran, so the suite cannot claim PASS.
+record() {
+  CHECKS+=("$1")
+  case "$1" in
+    FAIL*) OVERALL="FAIL" ;;
+    SKIP*) [[ "$OVERALL" == "PASS" ]] && OVERALL="INCOMPLETE" ;;
+  esac
+  return 0
+}
 
 run_go_test() {
   local id="$1" repo="$2" pkg="$3"
@@ -52,11 +61,13 @@ TA_AR="${TA_REPO}/arbitrage-realtime"
 run_go_test "pairs_calc_slots" "$TA_AR" "./internal/calculator/..."
 run_go_test "pairs_orchestrator" "$TA_AR" "./internal/orchestrator/..."
 run_go_test "pairs_freshness" "$TA_AR" "./internal/market/..."
-run_go_test "perf_grpc_load_ta" "$TA_AR" "./internal/transport/grpc/..." -run "Load"
+# NOTE: no gRPC load checks here. They previously ran `go test -run "Load"` against
+# packages that contain no test matching /Load/, so go exited 0 with
+# "[no tests to run]" and the suite recorded a PASS that asserted nothing.
+# Re-add only alongside real load tests in the TA/DMS repos.
 
 # --- DMS: filters, gates, decision engine ---
 run_go_test "filter_readiness" "$DMS_REPO" "./internal/strategycore/..."
-run_go_test "perf_grpc_load_dms" "$DMS_REPO" "./internal/transport/grpcopp/..." -run "Load"
 
 # --- TES: execution, contracts ---
 run_go_test "exec_tes" "$TES_REPO" "./..." -run "Test|Contract"
@@ -94,6 +105,22 @@ echo "================================"
 echo "Mode:    OFFLINE (learning)"
 echo "Overall: ${OVERALL}"
 echo "Report:  ${JSON_FILE}"
+if [[ "$OVERALL" == "INCOMPLETE" ]]; then
+  echo "--------------------------------"
+  echo "INCOMPLETE is NOT a pass: one or more checks never ran."
+  echo "Skipped checks:"
+  for line in "${CHECKS[@]}"; do
+    [[ "$line" == SKIP* ]] || continue
+    IFS='|' read -r _ id detail extra <<< "$line"
+    echo "  - ${id}: ${detail} (${extra})"
+  done
+  echo "Fix TA_REPO / DMS_REPO / TES_REPO in config.env, then re-run."
+fi
 echo "================================"
 
-[[ "$OVERALL" == "PASS" ]]
+# Exit codes: 0 = PASS, 1 = FAIL, 2 = INCOMPLETE (checks skipped).
+case "$OVERALL" in
+  PASS)       exit 0 ;;
+  INCOMPLETE) exit 2 ;;
+  *)          exit 1 ;;
+esac

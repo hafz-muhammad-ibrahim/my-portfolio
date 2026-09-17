@@ -59,7 +59,6 @@ Binance, Kraken, Bybit, Gate.io, OKX — spot and futures.
 | TA orchestrator cycle warning | 80–100ms (`ARB_TARGET_LATENCY_MS`) |
 | TA quote freshness gate | < 500ms |
 | DMS decision latency | < 100ms |
-| gRPC candidate load test | 350 streams/sec |
 | TA emitter queue | default 1024 |
 | DMS post-decide queue | default 512, workers 20 |
 
