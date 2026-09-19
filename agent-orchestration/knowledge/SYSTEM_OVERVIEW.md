@@ -1,88 +1,70 @@
 # System Overview — TA / DMS / TES
 
+> Public summary. The trading services are private; this describes the shape of
+> the system at the level needed to understand the orchestration layer, without
+> configuration values, key schemas, venue names, or tuning thresholds.
+
 ## What this platform does
 
-Real-time **multi-exchange crypto arbitrage**:
+Real-time multi-exchange crypto arbitrage across several venues:
 
-1. **TA** watches prices on 5 exchanges via WebSocket
-2. **TA** calculates profitable opportunities (45 parallel slots per cycle)
-3. **DMS** evaluates each opportunity through decision gates
+1. **TA** ingests market data over streaming connections
+2. **TA** evaluates candidate opportunities in parallel each cycle
+3. **DMS** puts each candidate through a series of decision gates
 4. **DMS** orchestrates dual-leg execution via **TES**
 5. **TES** places orders and streams fill events back to DMS
 
 ## Services
 
-| Code | Name | Language | Default port |
-|------|------|----------|--------------|
-| TA | Trading Agent (`arbitrage-realtime`) | Go 1.24 | process (no HTTP health) |
-| DMS | Decision Making Service | Go 1.23 | 8080 |
-| TES | Trade Execution System | Go 1.25 | 8080 (use `TRADE_EXECUTION_SYSTEM_PORT`) |
+| Code | Name | Role |
+|------|------|------|
+| TA | Trading Agent | Market ingestion, opportunity detection |
+| DMS | Decision Making Service | Gating, decisions, execution orchestration |
+| TES | Trade Execution System | Venue adapters, order placement, fill tracking |
+
+All three are Go services.
 
 ## Data flow
 
-```
-Exchanges (WS/REST)
+```text
+Exchanges (streaming + REST)
        ↓
    TA: calculator + orchestrator
-       ↓ gRPC OppCandidate stream
-   DMS: 6-gate evaluator → execution orchestrator
-       ↓ HTTP POST /api/v1/{exchange}/...
+       ↓ gRPC candidate stream
+   DMS: multi-gate evaluator → execution orchestrator
+       ↓ HTTP
    TES: venue services → exchange APIs
-       ↓ HTTP POST /api/v1/order/status
-   DMS: webhook merge → Redis tde:opp lifecycle
+       ↓ HTTP callback
+   DMS: webhook merge → opportunity lifecycle state
 ```
 
 ## Shared infrastructure
 
 | Component | Purpose |
 |-----------|---------|
-| **Redis** | Hot-path canonical JSON (`tde:opp`, `tde:order:*`, `tde:req:*`) |
-| **MongoDB** | Async long-term persistence |
-| **Prometheus** | Metrics on DMS and TES (`/metrics`) |
-| **SHARED_ENV_FILE** | `EXCHANGES` and pair toggles shared across TA/DMS/TES |
+| **Redis** | Hot-path canonical state for in-flight opportunities and orders |
+| **MongoDB** | Asynchronous long-term persistence |
+| **Prometheus** | Metrics on DMS and TES |
+| **Shared env file** | Venue and pair toggles shared across the three services |
 
-## Exchanges (5)
+## Strategy families
 
-Binance, Kraken, Bybit, Gate.io, OKX — spot and futures.
+Same-exchange and cross-exchange spot arbitrage, plus futures-basis strategies.
 
-## Strategy types (TA calculator)
+## Performance characteristics
 
-- `same_exchange`
-- `cross_exchange`
-- `futures_basis`
-- `usdc_futures_basis`
-
-## Performance targets (design SLOs)
-
-| Metric | Target |
-|--------|--------|
-| TA orchestrator cycle warning | 80–100ms (`ARB_TARGET_LATENCY_MS`) |
-| TA quote freshness gate | < 500ms |
-| DMS decision latency | < 100ms |
-| TA emitter queue | default 1024 |
-| DMS post-decide queue | default 512, workers 20 |
+The system is latency-sensitive throughout. TA rejects stale quotes at the
+ingestion boundary, DMS is budgeted to decide well inside a sub-second window,
+and both gRPC paths use bounded queues with depth alerting so backpressure is
+visible rather than silent. Concrete thresholds, queue sizes and latency
+budgets live in the private repos' configuration.
 
 ## Agent orchestration boundary
 
 | Layer | Technology | Role |
 |-------|------------|------|
 | **Trading hot path** | Go microservices | Execute trades (no LLM) |
-| **Agent orchestration** | n8n + Python + Claude | Build, test, monitor, suggest fixes |
+| **Agent orchestration** | Python + Claude | Build, test, monitor, suggest fixes |
 
-AI agents **never** place live orders. They run tests, read metrics, and propose code changes on branches.
-
-## Repo locations (local)
-
-```text
-/Users/qbatch/desktop/trading-agent/           # TA
-/Users/qbatch/Desktop/decision-making-service/ # DMS
-/Users/qbatch/Desktop/trade-execution-system/  # TES
-```
-
-## GitHub (private)
-
-```text
-github.com/hafz-muhammad-ibrahim/trading-agent
-github.com/hafz-muhammad-ibrahim/decision-making-service
-github.com/hafz-muhammad-ibrahim/trade-execution-system
-```
+AI agents **never** place live orders. They run tests, read metrics, and
+propose code changes on branches for human review.

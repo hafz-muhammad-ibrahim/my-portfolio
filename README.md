@@ -223,7 +223,7 @@ Listed so nothing above reads as a bigger claim than it is:
 ```text
 TA (ingestion) ──gRPC──► DMS (decide) ──HTTP──► TES (execute)
         │                     │                      │
-        └─────────── Redis tde:* lifecycle ──────────┘
+        └─────────── Redis lifecycle state ──────────┘
 ```
 
 Source is private; read access available on request.
