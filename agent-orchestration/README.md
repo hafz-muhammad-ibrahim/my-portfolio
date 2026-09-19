@@ -1,67 +1,54 @@
-# Agent Orchestration — Portfolio Layer
+# Agent Orchestration — implementation
 
-AI agent team that **builds, tests, and monitors** the TA / DMS / TES trading platform.
+The orchestration layer for the TA / DMS / TES trading platform.
 
-> **Important:** AI agents work on **development & ops** — not inside the live trade execution hot path.
+> **The [root README](../README.md) is the source of truth** for what this is,
+> how it fits together, what runs standalone, and how to start it. This file
+> only covers layout and the pieces that live in this directory.
+
+**Boundary:** agents work on development and ops — running tests, reading
+metrics, proposing changes. No LLM sits in the live trade execution hot path.
 
 ## Folder structure
 
 ```text
 agent-orchestration/
-├── NEXT_STEPS.md          ← Start here (phased roadmap)
-├── knowledge/             ← RAG docs (agents read these first)
-├── e2e-standards/         ← Deterministic pass/fail scripts
-├── prompts/               ← System prompts per agent role
-├── n8n/                   ← Workflow automation setup
-└── agents/                ← Python orchestrator (Phase 4)
+├── agents/            Python: tool-loop agent, planners, FastAPI surface
+├── e2e-standards/     deterministic pass/fail scripts + JSON reports
+├── knowledge/         markdown docs the agent reads as context
+├── prompts/           per-role system prompts (see note below)
+└── n8n/               intended workflow automation — documented, not built
 ```
 
-## The 7 agents
+## What executes
 
-| Agent | Job |
-|-------|-----|
-| **PM** | Receives feature/bug → breaks into tasks → assigns workers |
-| **Dev (TA)** | Changes `trading-agent/arbitrage-realtime` |
-| **Dev (DMS)** | Changes `decision-making-service` |
-| **Dev (TES)** | Changes `trade-execution-system` |
-| **Reviewer** | Approves or rejects code diffs |
-| **QA** | Runs `go test` across services |
-| **E2E Standards** | Runs `e2e-standards/run_all.sh` |
+| Component | Where |
+|---|---|
+| **Tool-loop agent** — model decides when to call a tool | `agents/raw_tool_agent.py` |
+| **LLM planner** — turns a feature request into a task list | `agents/orchestrator.py` (`pm_plan_claude`) |
+| **Stub planner** — deterministic triage of a failing report | `agents/orchestrator.py` (`pm_plan_stub`) |
+| **Verification suite** — `go test` across the three services | `e2e-standards/run_offline.sh` |
+| **HTTP surface** — `/health`, `/api/run`, `/api/incident` | `agents/api.py` |
 
-## Loop
+`prompts/` defines system prompts for five roles — PM, Dev, Reviewer, QA and
+E2E. These are design artifacts describing the intended division of labour.
+Only the components in the table above run today; code edits are human-driven,
+so there is no autonomous Dev or Reviewer agent. The root README's
+"Not implemented" section lists the rest of the gaps.
 
-```
-You or n8n trigger
-    → PM plans tasks
-    → Dev implements on git branch
-    → Reviewer checks diff
-    → QA runs unit tests
-    → E2E runs standards checklist
-    → PASS: notify you for merge
-    → FAIL: PM replans → loop
-```
+## Two verification suites
 
-## Quick start (today)
+| Script | Needs | Writes |
+|---|---|---|
+| `run_offline.sh` | the private Go repos on disk | `reports/latest_offline.json`, copied to `latest.json` |
+| `run_all.sh` | DMS, TES and Redis actually running | `reports/latest.json` |
 
-```bash
-# 1. Copy config
-cp agent-orchestration/e2e-standards/config.env.example \
-   agent-orchestration/e2e-standards/config.env
+`run_offline.sh` is the one wired into the agent and the HTTP surface. It
+reports `PASS` / `FAIL` / `INCOMPLETE` (exit 0 / 1 / 2); a skipped check yields
+`INCOMPLETE` and never `PASS`. Both scripts write `latest.json`, so treat that
+file as belonging to whichever ran most recently.
 
-# 2. Edit URLs/ports if your stack differs
-# 3. Run standards (services must be up)
-cd agent-orchestration/e2e-standards
-./run_all.sh
-```
+## Running it
 
-## Status
-
-| Phase | Status |
-|-------|--------|
-| 0 — Portfolio docs | ✅ Done (this repo) |
-| 1 — Knowledge base | ✅ Done |
-| 2 — E2E standards scripts | ✅ Done |
-| 3 — n8n monitoring | 📋 Your turn (see `n8n/README.md`) |
-| 4 — Python agents + API | 📋 Next |
-| 5 — Full loop | 📋 After Phase 4 |
-| 6 — Portfolio website + demo video | 📋 Final |
+See **Quickstart** in the [root README](../README.md). Repo paths and service
+URLs come from `e2e-standards/config.env` (copy `config.env.example`).

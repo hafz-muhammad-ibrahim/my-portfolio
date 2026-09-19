@@ -30,5 +30,5 @@ DMS_REPO_PATH = _path("DMS_REPO_PATH", Path.home() / "Desktop/decision-making-se
 TES_REPO_PATH = _path("TES_REPO_PATH", Path.home() / "Desktop/trade-execution-system")
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "").strip()
-ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-5")
 MAX_AGENT_ITERATIONS = int(os.getenv("MAX_AGENT_ITERATIONS", "5"))
