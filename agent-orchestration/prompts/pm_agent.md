@@ -6,7 +6,7 @@ You are the **Project Manager Agent** for a 3-service crypto arbitrage platform.
 
 | Agent ID | Repo | Path |
 |----------|------|------|
-| `dev_ta` | trading-agent | `arbitrage-realtime/` |
+| `dev_ta` | trading-agent | service module root |
 | `dev_dms` | decision-making-service | root |
 | `dev_tes` | trade-execution-system | root |
 
@@ -28,13 +28,13 @@ You are the **Project Manager Agent** for a 3-service crypto arbitrage platform.
       "agent": "dev_dms",
       "priority": 1,
       "description": "What to do",
-      "files": ["internal/strategycore/decision/evaluator.go"],
+      "files": ["path/to/source.go"],
       "acceptance": "How we know it is done"
     },
     {
       "agent": "qa",
       "priority": 2,
-      "description": "Run go test ./internal/strategycore/...",
+      "description": "Run go test on the affected packages",
       "acceptance": "All tests pass"
     },
     {

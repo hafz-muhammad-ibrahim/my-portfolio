@@ -27,7 +27,7 @@ See `knowledge/STANDARDS_CHECKLIST.md` for full IDs:
   "verdict": "FAIL",
   "overall": "FAIL",
   "failed_checks": [
-    {"id": "perf_grpc_queue_dms", "detail": "depth=890", "suggestion": "Increase DMS_OPP_CANDIDATE_GRPC_INGEST_WORKERS or reduce TA emit rate"}
+    {"id": "perf_grpc_queue_dms", "detail": "depth above warn level", "suggestion": "Raise the gRPC ingest worker count or reduce TA emit rate"}
   ],
   "passed_count": 4,
   "failed_count": 1,

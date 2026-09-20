@@ -4,6 +4,32 @@ Step-by-step to get: **you tell PM → agents do the work → tests pass**.
 
 ---
 
+## Day 1–2 — Raw tool loop (new)
+
+After install (below), run:
+
+```bash
+cd ~/my-portfolio/agent-orchestration/agents
+source .venv/bin/activate
+
+# Day 1 — API smoke test
+python test_llm.py
+
+# Day 1 — offline tests from Python
+python -m tools.run_offline_tests
+
+# Day 2 — agent decides when to call tools (no LangGraph)
+python raw_tool_agent.py "Run offline E2E standards and summarize failures"
+python raw_tool_agent.py "What is the readiness gate? Read STANDARDS_CHECKLIST.md"
+
+# No API key? Verify tools only:
+python raw_tool_agent.py --dry-run "test"
+```
+
+Files: `agent_tools.py`, `tools/registry.py`, `raw_tool_agent.py`
+
+---
+
 ## Step 1 — Install once (30 min)
 
 ```bash
@@ -11,7 +37,7 @@ Step-by-step to get: **you tell PM → agents do the work → tests pass**.
 go version
 
 # Python orchestrator
-cd ~/Desktop/my-portfolio/agent-orchestration/agents
+cd ~/my-portfolio/agent-orchestration/agents
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -23,9 +49,9 @@ Edit `.env`:
 ```bash
 ANTHROPIC_API_KEY=sk-ant-your-key-here   # get from console.anthropic.com
 
-TA_REPO_PATH=/Users/qbatch/desktop/trading-agent
-DMS_REPO_PATH=/Users/qbatch/Desktop/decision-making-service
-TES_REPO_PATH=/Users/qbatch/Desktop/trade-execution-system
+TA_REPO_PATH=/path/to/trading-agent
+DMS_REPO_PATH=/path/to/decision-making-service
+TES_REPO_PATH=/path/to/trade-execution-system
 ```
 
 Get API key: https://console.anthropic.com (~$5 free credit to start)
@@ -35,7 +61,7 @@ Get API key: https://console.anthropic.com (~$5 free credit to start)
 ## Step 2 — Verify offline tests work (5 min)
 
 ```bash
-cd ~/Desktop/my-portfolio/agent-orchestration/e2e-standards
+cd ~/my-portfolio/agent-orchestration/e2e-standards
 ./run_offline.sh
 ```
 
@@ -48,7 +74,7 @@ Expected: mostly `PASS`. If any `FAIL`, fix Go path in `config.env`.
 ## Step 3 — Run orchestrator (learning mode)
 
 ```bash
-cd ~/Desktop/my-portfolio/agent-orchestration/agents
+cd ~/my-portfolio/agent-orchestration/agents
 source .venv/bin/activate
 
 # Check standards + get PM task plan
@@ -91,21 +117,21 @@ python orchestrator.py --request "Add debug logging when DMS readiness gate reje
 ## Step 5 — Example session
 
 **You say:**
-> Add a comment above readiness gate check explaining the 500ms threshold
+> Add a comment above the readiness gate check explaining its freshness threshold
 
 **PM outputs:**
 ```json
 {
   "tasks": [
-    {"agent": "dev_dms", "files": ["internal/strategycore/decision/evaluator.go"], ...},
-    {"agent": "qa", "description": "go test ./internal/strategycore/..."},
+    {"agent": "dev_dms", "files": ["path/to/source.go"], ...},
+    {"agent": "qa", "description": "go test on the affected packages"},
     {"agent": "e2e", "description": "./run_offline.sh"}
   ]
 }
 ```
 
 **You in Cursor:**
-> @evaluator.go PM task: add comment above readiness gate about 500ms threshold
+> @<evaluator source file> PM task: add comment above readiness gate about its freshness threshold
 
 **You run:**
 ```bash

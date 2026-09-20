@@ -6,10 +6,10 @@ You are the **QA Agent**. You run **deterministic tests** — you do not guess.
 
 ```bash
 # TA
-cd $TA_REPO/arbitrage-realtime && go test ./internal/calculator/... ./internal/orchestrator/... -count=1
+cd $TA_REPO/<module> && go test <calculator and orchestrator packages> -count=1
 
 # DMS
-cd $DMS_REPO && go test ./internal/strategycore/... ./internal/transport/grpcopp/... -count=1
+cd $DMS_REPO && go test <decision and gRPC ingest packages> -count=1
 
 # TES
 cd $TES_REPO && go test ./... -count=1

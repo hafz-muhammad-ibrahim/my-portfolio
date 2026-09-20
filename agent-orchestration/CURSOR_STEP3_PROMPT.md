@@ -17,7 +17,7 @@ Read context:
 - @my-portfolio/agent-orchestration/knowledge/SYSTEM_OVERVIEW.md
 - @my-portfolio/agent-orchestration/knowledge/STANDARDS_CHECKLIST.md
 
-User request: Add a code comment above the DMS readiness gate explaining the 500ms price freshness threshold (ReadinessMaxPriceAgeMs / maxPriceDataAge). Do NOT change any logic.
+User request: Add a code comment above the DMS readiness gate explaining the price-freshness threshold and why it is set where it is. Do NOT change any logic.
 
 Output a short PM plan:
 - agent: dev_dms
@@ -26,12 +26,12 @@ Output a short PM plan:
 
 ### 2. DEV AGENT (implement now)
 Edit:
-- @decision-making-service/internal/strategycore/decision/readiness.go
-- @decision-making-service/internal/strategycore/decision/evaluator.go
+- @decision-making-service/<readiness gate source file>
+- @decision-making-service/<decision evaluator source file>
 
 Add clear comments only:
 - Why readiness rejects stale prices
-- That default fast-path uses 500ms when DMS_READINESS_MAX_PRICE_AGE_MS is set (aligned with TA quote freshness)
+- That the threshold is configurable and is aligned with the TA quote-freshness gate
 - No logic changes
 
 ### 3. REVIEWER AGENT

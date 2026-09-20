@@ -2,7 +2,12 @@
 .venv/
 __pycache__/
 *.pyc
-e2e-standards/config.env
-e2e-standards/reports/
+# Local config and generated reports. These patterns need the ** prefix: a rule
+# containing a slash is anchored to this file's directory, so the old
+# "e2e-standards/..." spelling never matched agent-orchestration/e2e-standards/.
+**/e2e-standards/config.env
+**/e2e-standards/reports/
 node_modules/
 .DS_Store
+agent-orchestration/agents/chroma_db/
+agent-orchestration/agents/.env

@@ -27,8 +27,8 @@ You **do not need** exchange accounts, Redis, MongoDB, or running TA/DMS/TES to 
 
 | Your requirement | Offline equivalent |
 |------------------|-------------------|
-| All pairs triggering | `go test ./internal/calculator/...` |
-| Filters working | `go test ./internal/strategycore/...` |
+| All pairs triggering | `go test` on the calculator packages |
+| Filters working | `go test` on the decision-gate packages |
 | Latency / queues | `go test -run Load` in grpc packages |
 | Revert / close lifecycle | lifecycle unit tests + e2e test code (when Redis optional) |
 | E2E standards | `./run_offline.sh` |
@@ -42,11 +42,11 @@ YOU:  "Add a log line when readiness gate rejects stale price"
         ↓
 PM:   Breaks into tasks → assigns dev_dms
         ↓
-DEV:  Edits evaluator.go on branch agent/feature-xyz
+DEV:  Edits the relevant source file on branch agent/feature-xyz
         ↓
 REVIEWER: Checks diff → APPROVE or REJECT
         ↓
-QA:   go test ./internal/strategycore/...
+QA:   go test on the decision-gate packages
         ↓
 E2E:  ./run_offline.sh
         ↓

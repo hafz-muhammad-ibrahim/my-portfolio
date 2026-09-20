@@ -17,7 +17,7 @@ You now have:
 **Your action today (30 minutes):**
 
 ```bash
-cd ~/Desktop/my-portfolio
+cd ~/my-portfolio
 git init
 git add .
 git commit -m "Add agent orchestration foundation for trading platform portfolio"
@@ -60,9 +60,9 @@ git push -u origin main
 2. Create `agents/.env`:
    ```bash
    ANTHROPIC_API_KEY=sk-ant-...
-   TA_REPO_PATH=/Users/qbatch/desktop/trading-agent
-   DMS_REPO_PATH=/Users/qbatch/Desktop/decision-making-service
-   TES_REPO_PATH=/Users/qbatch/Desktop/trade-execution-system
+   TA_REPO_PATH=/path/to/trading-agent
+   DMS_REPO_PATH=/path/to/decision-making-service
+   TES_REPO_PATH=/path/to/trade-execution-system
    ```
 3. Install deps:
    ```bash

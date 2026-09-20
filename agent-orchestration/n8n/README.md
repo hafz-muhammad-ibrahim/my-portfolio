@@ -39,7 +39,7 @@ Open: http://localhost:5678
 1. **Schedule Trigger** — `0 * * * *`
 2. **Execute Command** (or SSH to host):
    ```bash
-   /Users/qbatch/Desktop/my-portfolio/agent-orchestration/e2e-standards/run_all.sh
+   /path/to/my-portfolio/agent-orchestration/e2e-standards/run_all.sh
    ```
 3. **Read Binary File** — `reports/latest.json`
 4. **IF** — `overall` == `FAIL`

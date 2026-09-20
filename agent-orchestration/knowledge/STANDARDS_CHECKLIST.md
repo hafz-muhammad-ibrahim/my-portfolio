@@ -1,8 +1,13 @@
 # E2E Standards Checklist
 
-Used by the **E2E Standards Agent** and `e2e-standards/run_all.sh`.
+Used by the **E2E Standards Agent** and the `e2e-standards/` runners.
 
 Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI only explains failures.
+
+> Public summary. Check IDs are functional — the runners emit them and the PM
+> agent routes on them, so they are listed verbatim. Concrete thresholds,
+> metric names, key patterns and source paths are deployment-specific and live
+> in the private repos and in untracked local config.
 
 ---
 
@@ -10,9 +15,9 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 
 | ID | Check | How |
 |----|-------|-----|
-| `health_dms` | DMS `GET /health` returns 200 | `check_health.sh` |
-| `health_tes` | TES `GET /health` returns 200 | `check_health.sh` |
-| `health_ta` | TA process running (optional) | manual / systemd |
+| `health_dms` | DMS health endpoint returns 200 | `check_health.sh` |
+| `health_tes` | TES health endpoint returns 200 | `check_health.sh` |
+| `health_ta` | TA process running (optional) | manual / service manager |
 
 ---
 
@@ -20,10 +25,10 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 
 | ID | Check | How |
 |----|-------|-----|
-| `pairs_exchanges` | All configured exchanges in `EXCHANGES` connected | logs / Redis |
-| `pairs_calc_slots` | 45 parallel calc slots run without panic | unit tests `calculator` |
-| `pairs_candidates_emit` | gRPC OppCandidate stream active when `TA_EMIT_OPP_CANDIDATE=true` | metrics / logs |
-| `pairs_freshness` | Stale quotes (>500ms) rejected | `freshness.go` tests |
+| `pairs_exchanges` | All configured venues connected | logs / Redis |
+| `pairs_calc_slots` | Parallel calculation slots run without panic | calculator unit tests |
+| `pairs_candidates_emit` | gRPC candidate stream active when emission is enabled | metrics / logs |
+| `pairs_freshness` | Stale quotes rejected at the freshness threshold | market package tests |
 
 ---
 
@@ -31,10 +36,10 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 
 | ID | Check | How |
 |----|-------|-----|
-| `filter_readiness` | Readiness gate blocks stale/missing data | `DMS_READINESS_GATE_ENABLED` |
-| `filter_margin` | Margin preflight blocks insufficient balance | `DMS_MARGIN_PREFLIGHT_ENABLED` |
+| `filter_readiness` | Readiness gate blocks stale or missing data | gate toggle + unit tests |
+| `filter_margin` | Margin preflight blocks insufficient balance | gate toggle + unit tests |
 | `filter_reject_no_tes` | REJECT decisions never call TES | integration tests |
-| `filter_profit` | Profit gate configured (may be disabled in test) | `strategycore/evaluator.go` |
+| `filter_profit` | Profit gate configured (may be disabled in test) | strategycore tests |
 
 ---
 
@@ -42,9 +47,9 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 
 | ID | Check | How |
 |----|-------|-----|
-| `exec_approve_triggers_tes` | APPROVE → HTTP to TES with `opportunity_id` + `request_id` | logs / Redis `tde:req` |
-| `exec_callback` | TES → DMS `POST /api/v1/order/status` within 5s | TES outbox metrics |
-| `exec_dual_leg` | Both legs tracked in `tde:opp` | e2e lifecycle tests |
+| `exec_approve_triggers_tes` | APPROVE issues an HTTP call to TES carrying correlation ids | logs / Redis |
+| `exec_callback` | TES reports order status back to DMS within the callback budget | TES outbox metrics |
+| `exec_dual_leg` | Both legs tracked in the opportunity record | e2e lifecycle tests |
 
 ---
 
@@ -52,10 +57,14 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 
 | ID | Check | Threshold |
 |----|-------|-----------|
-| `perf_dms_decision` | Decision latency p95 | < 100ms (under normal load) |
-| `perf_ta_cycle` | Orchestrator cycle warning | < 100ms |
-| `perf_grpc_queue_ta` | TA candidate queue depth | < 80% of 1024 |
-| `perf_grpc_queue_dms` | DMS `DMSPostDecideQueueDepth` | < 80% of 512 |
+| `perf_dms_decision` | Decision latency p95 | within the configured budget |
+| `perf_ta_cycle` | Orchestrator cycle warning | within the configured budget |
+| `perf_grpc_queue_ta` | TA candidate queue depth | below the configured warn level |
+| `perf_grpc_queue_dms` | DMS post-decide queue depth | below the configured warn level |
+
+Warn levels come from `TA_QUEUE_WARN` / `DMS_QUEUE_WARN` in
+`e2e-standards/config.env`; metric names come from `DMS_QUEUE_METRIC` /
+`TES_OUTBOX_METRIC` in the same file.
 
 ---
 
@@ -63,10 +72,13 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 
 | ID | Check | How |
 |----|-------|-----|
-| `life_close` | `POST /api/v1/close` completes opportunity | DMS close service |
-| `life_revert_60s` | Failed dual-leg reverts within ~60s | `trade_lifecycle.go` / CAT tests |
-| `life_no_stuck_opp` | No `tde:opp:*` stuck > 5 min in active state | `check_redis.sh` |
-| `life_recovery` | TES B4 startup sync completes | TES `/metrics` startup gauges |
+| `life_close` | Close request completes an opportunity | DMS close service |
+| `life_revert_60s` | Failed dual-leg reverts inside the revert budget | lifecycle tests |
+| `life_no_stuck_opp` | No opportunity stuck in an active state past its budget | `check_redis.sh` |
+| `life_recovery` | TES startup sync completes | TES startup gauges |
+
+`check_redis.sh` scans the pattern given by `OPP_KEY_PATTERN` in
+`e2e-standards/config.env`, and skips when it is unset.
 
 ---
 
@@ -74,9 +86,9 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
 
 | ID | Check | How |
 |----|-------|-----|
-| `data_redis_mongo` | Redis ↔ Mongo sync integrity | `e2e_redis_mongo_integrity` |
-| `data_lifecycle` | Full opp lifecycle rules | `e2e_lifecycle_integrity` |
-| `data_schema` | Keys match `DMS_REDIS_TDE_SCHEMA.md` | schema validation |
+| `data_redis_mongo` | Redis ↔ Mongo sync integrity | integrity test suite |
+| `data_lifecycle` | Full opportunity lifecycle rules | lifecycle test suite |
+| `data_schema` | Keys match the documented Redis schema | schema validation |
 
 ---
 
@@ -89,8 +101,8 @@ Each check returns `PASS` or `FAIL` with evidence. Scripts decide pass/fail; AI 
   "timestamp": "2026-06-22T12:00:00Z",
   "overall": "PASS",
   "checks": [
-    {"id": "health_dms", "status": "PASS"},
-    {"id": "health_tes", "status": "PASS"}
+    {"status": "PASS", "id": "health_dms"},
+    {"status": "PASS", "id": "health_tes"}
   ]
 }
 ```
