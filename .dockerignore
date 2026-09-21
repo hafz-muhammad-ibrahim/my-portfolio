@@ -1,0 +1,38 @@
+# Keep the build context small and free of secrets.
+
+# Virtualenvs (the local one is ~437MB)
+**/.venv/
+**/venv/
+
+# Python build artifacts
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/*.egg-info/
+
+# Secrets — never enter the build context. ANTHROPIC_API_KEY is supplied at
+# runtime via an environment variable, never baked into the image.
+**/.env
+**/.env.*
+!**/.env.example
+
+# Generated output
+**/e2e-standards/reports/
+**/chroma_db/
+
+# VCS and editor noise
+.git/
+.gitattributes
+**/.DS_Store
+**/*.swp
+
+# The private Go services are siblings of this repo, not inside it. Listed
+# defensively so a nested checkout can never reach the image.
+trading-agent/
+decision-making-service/
+trade-execution-system/
+**/arbitrage-realtime/
+
+# Container files themselves
+Dockerfile
+.dockerignore

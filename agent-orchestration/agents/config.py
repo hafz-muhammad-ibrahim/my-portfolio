@@ -29,6 +29,12 @@ TA_REPO_PATH = _path("TA_REPO_PATH", Path.home() / "desktop/trading-agent")
 DMS_REPO_PATH = _path("DMS_REPO_PATH", Path.home() / "Desktop/decision-making-service")
 TES_REPO_PATH = _path("TES_REPO_PATH", Path.home() / "Desktop/trade-execution-system")
 
+# Demo mode: serve a bundled sample report instead of running the offline suite.
+# For hosted demos where the private Go repos are not present. Off unless the
+# env var is explicitly set to a truthy value.
+DEMO_MODE = os.getenv("DEMO_MODE", "").strip().lower() in {"1", "true", "yes", "on"}
+DEMO_REPORT_PATH = _AGENTS_DIR / "demo" / "sample_report.json"
+
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "").strip()
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-5")
 MAX_AGENT_ITERATIONS = int(os.getenv("MAX_AGENT_ITERATIONS", "5"))

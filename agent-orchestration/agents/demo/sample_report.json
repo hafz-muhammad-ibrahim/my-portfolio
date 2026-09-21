@@ -1,0 +1,15 @@
+{
+  "demo": true,
+  "timestamp": "2026-01-01T00:00:00Z",
+  "mode": "demo",
+  "overall": "PASS",
+  "note": "SAMPLE DATA - not a real run. Bundled so a hosted demo can respond without the private Go repositories present. No go test was executed and no private repository was read.",
+  "checks": [
+    {"status": "PASS", "id": "pairs_calc_slots", "detail": "sample - not executed", "extra": "calculator packages"},
+    {"status": "PASS", "id": "pairs_orchestrator", "detail": "sample - not executed", "extra": "orchestrator packages"},
+    {"status": "PASS", "id": "pairs_freshness", "detail": "sample - not executed", "extra": "market packages"},
+    {"status": "PASS", "id": "filter_readiness", "detail": "sample - not executed", "extra": "decision-gate packages"},
+    {"status": "PASS", "id": "exec_tes", "detail": "sample - not executed", "extra": "TES packages"},
+    {"status": "PASS", "id": "life_lifecycle_unit", "detail": "sample - not executed", "extra": "lifecycle packages"}
+  ]
+}
