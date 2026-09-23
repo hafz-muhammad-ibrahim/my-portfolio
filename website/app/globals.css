@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 96px;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+  body {
+    @apply bg-ink text-body font-sans antialiased;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display text-head;
+    letter-spacing: -0.01em;
+  }
+  a { color: inherit; }
+  ::selection { background: rgba(122, 162, 247, 0.28); color: #fff; }
+  :focus-visible { outline: 2px solid #7aa2f7; outline-offset: 3px; border-radius: 3px; }
+}
+
+/* soft ambient glow behind everything */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(760px 480px at 85% -10%, rgba(122, 162, 247, 0.10), transparent 60%),
+    radial-gradient(560px 380px at 0% 6%, rgba(229, 181, 103, 0.05), transparent 60%);
+}
+
+@layer utilities {
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; animation: none; }
+  }
+}

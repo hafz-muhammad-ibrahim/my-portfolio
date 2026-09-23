@@ -33,6 +33,10 @@ decision-making-service/
 trade-execution-system/
 **/arbitrage-realtime/
 
+# The Next.js portfolio site. Not part of the API image — the Dockerfile only
+# copies agent-orchestration/ — so keep it out of the build context.
+website/
+
 # Container files themselves
 Dockerfile
 .dockerignore
