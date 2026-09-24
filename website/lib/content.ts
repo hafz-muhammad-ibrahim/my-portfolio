@@ -2,13 +2,17 @@ export const profile = {
   name: "Muhammad Ibrahim",
   role: "Full-Stack Engineer",
   tagline: "Node.js · TypeScript · React · AWS & GCP",
+  photo: "/profile.jpg",
   blurb:
     "I build backends that stay fast and cheap when traffic gets serious — the payment flow that can't drop a transaction, the platform that has to hold up at 100K users. Six years across product, scale and cloud, now working where systems meet LLM orchestration.",
   location: "Lahore, Pakistan",
   email: "muhammadibrahim6318@gmail.com",
+  phone: "+92 333 6369514",
   github: "https://github.com/hafz-muhammad-ibrahim",
   linkedin: "https://www.linkedin.com/in/muhammadibrahim-7504211b9",
-  liveDemo: "https://my-portfolio-bqhw.onrender.com",
+  // Create a free scheduler at calendly.com or cal.com and paste the link here.
+  // While empty, the "Book a call" button falls back to email.
+  calendly: "",
 };
 
 export const stats = [
@@ -20,9 +24,9 @@ export const stats = [
 
 export const nav = [
   { id: "about", label: "About" },
+  { id: "work", label: "Work" },
   { id: "experience", label: "Experience" },
-  { id: "projects", label: "Projects" },
-  { id: "skills", label: "Skills" },
+  { id: "contact", label: "Contact" },
 ];
 
 export type Job = {
@@ -74,27 +78,71 @@ export const experience: Job[] = [
 
 export type Project = {
   title: string;
-  tag: "live" | "private";
-  tagLabel: string;
-  org?: string;
+  org: string;
+  featured?: boolean;
+  tag?: "live";
   body: string;
+  highlights: string[];
   stack: string[];
-  links?: { label: string; href: string; external?: boolean }[];
+  links?: { label: string; href: string }[];
 };
 
 export const projects: Project[] = [
   {
-    title: "Agent Orchestration Layer",
-    tag: "live",
-    tagLabel: "Live demo",
-    org: "Personal project",
+    title: "CricketFly",
+    org: "Aylab.io · multi-chain fantasy platform",
+    featured: true,
     body:
-      "A supervisor service that sits on top of a trading platform and turns raw system checks into readable, actionable output. The core decision: deterministic code decides pass/fail — the LLM only explains results and drafts a remediation plan, and never sits in the trade hot path. It degrades to a deterministic fallback when no model key is present, and ships a safe demo mode with no secrets. Containerized and deployed.",
-    stack: ["Python", "FastAPI", "LLM orchestration", "Docker", "REST"],
-    links: [
-      { label: "Live demo", href: "https://my-portfolio-bqhw.onrender.com", external: true },
-      { label: "Source", href: "https://github.com/hafz-muhammad-ibrahim/my-portfolio", external: true },
+      "A fantasy-cricket platform running across four blockchains, with tournament management, NFT systems and multi-currency payment gateways. I architected the backend and the infrastructure it scales on.",
+    highlights: [
+      "Scaled to 100K+ daily active users at 99.9% uptime",
+      "Cut server costs ~40% via caching + multi-threaded workers",
+      "Led Web3 integration: wallets, gas optimization, NFT minting",
     ],
+    stack: ["Node.js", "Express", "TypeScript", "Redis", "GCP", "Web3.js"],
+    links: [{ label: "View app", href: "https://cricket-fly.en.uptodown.com/android" }],
+  },
+  {
+    title: "Ecom Circles",
+    org: "Qbatch · multi-marketplace automation",
+    featured: true,
+    body:
+      "A two-step order-fulfillment platform for Amazon, Walmart and Shopify drop-shippers — automating supplier selection across six marketplaces, warehouse management and delivery tracking.",
+    highlights: [
+      "Re-implemented Amazon MWS on SP-API: ~40% faster responses",
+      "Led AWS migration with CI/CD: ~30% lower operational cost",
+      "Held 99.9% uptime across the platform",
+    ],
+    stack: ["Node.js", "MySQL", "Sequelize", "AWS", "Docker", "Puppeteer"],
+    links: [{ label: "Visit product", href: "https://app.ecomcircles.com/" }],
+  },
+  {
+    title: "Agent Orchestration Layer",
+    org: "Personal project",
+    tag: "live",
+    body:
+      "A supervisor service over a trading platform. Deterministic code decides pass/fail; the LLM only explains results and drafts a remediation plan — never in the trade hot path. Ships a safe demo mode with no secrets. Containerized and deployed.",
+    highlights: [
+      "Deterministic core with an LLM explainer layer",
+      "Graceful fallback when no model key is present",
+      "Dockerized and running live",
+    ],
+    stack: ["Python", "FastAPI", "LLM orchestration", "Docker"],
+    links: [
+      { label: "Live demo", href: "https://my-portfolio-bqhw.onrender.com" },
+      { label: "Source", href: "https://github.com/hafz-muhammad-ibrahim/my-portfolio" },
+    ],
+  },
+  {
+    title: "Blockchain Ad Network",
+    org: "Aylab.io",
+    body:
+      "A full advertising ecosystem — user and admin panels with real-time on-chain transaction verification and OCR-based video analysis — protected by an ML bot-detection layer.",
+    highlights: [
+      "Cut manual verification time ~75% with automation",
+      "Reduced fraudulent clicks ~85%, lifted advertiser ROI ~40%",
+    ],
+    stack: ["Node.js", "TypeScript", "OCR", "ML detection", "AppsFlyer"],
   },
 ];
 

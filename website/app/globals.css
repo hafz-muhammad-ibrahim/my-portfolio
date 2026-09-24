@@ -53,3 +53,5 @@ body::before {
     .reveal { opacity: 1; transform: none; animation: none; }
   }
 }
+
+html, body { max-width: 100%; overflow-x: hidden; }
